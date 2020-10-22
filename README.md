@@ -21,3 +21,7 @@ Unghiul de pas: comanda pas cu pas 11.250 si 32 de pasi pe rotatie <br>
 Comanda micropasire 1 / 2 pas 5.625 de grade. Se executa 64 pasi pe rotatie.<br>
 Are reductor cu raport de transmitere 64 : 1 <br>
 Turatia la 5V: 15 rotatii pe minut
+
+![Comutare Actionare](https://github.com/brittleru/Arduino-Laboratory/blob/main/lab2-img1.png?raw=true)
+![Driver ULN 2003](https://github.com/brittleru/Arduino-Laboratory/blob/main/lab2-img2.png?raw=true)
+![Legare Arduino](https://github.com/brittleru/Arduino-Laboratory/blob/main/lab2-img3.png?raw=true)
