@@ -5,11 +5,20 @@
 #define MS3 6
 #define EN 7
 
-char userInput;
 int x;
 int y;
 int state;
+int pinInfrarosu = A0;
+int pinForta = A1;
 
+// Actionarea pentru un mecanism de prehensiune (gripper) care trb
+// Sa deplaseze un obiect paralelipipedic cu baza 100mm si latimea 100mm
+// Inaltimea pp este 300mm, inaltimea maxima a mecanismului este de 400mm
+// Avem un senzor infrarosu de ditanta si sezizeaza aproprierea de obiect
+// Daca distanta este mai mica de 20 mm atunci trb oprit 
+// Modulul de la roata dintata este de 3mm, roata dintata de pe motor are 20 de dinti
+// Unghiul motorului este 1.8 grade
+// un decaN este un KG forta
 
 void setup() {
   pinMode(stp, OUTPUT);
@@ -23,36 +32,69 @@ void setup() {
   Serial.begin(9600);
   Serial.println("Begin motor control");
   Serial.println();
-  Serial.println("Introduceti numarul dorit: ");
-  Serial.println("1. Miscare cu pasul motorului");
-  Serial.println("2. Miscare inversa cu micropasire");
-  Serial.println("3. Miscare cu micropasire 1/16 din pas");
-  Serial.println("4. Miscare inainte si inapoi");
-  Serial.println();
 }
 
 void loop() {
-  while(Serial.available()) {
-    userInput = Serial.read();
-    digitalWrite(EN, LOW); //Poate fi comandat doar pe LOW
-    if (userInput == '1') {
-      StepForwardDefault();
-    }
-    else if (userInput = '2') {
-      ReverseStepDefault();
-    }
-    else if (userInput = '3') {
-      SmallStepMode();
-    }
-    else if (userInput = '4') {
-      ForwardBackwardStep();
-    }
-    else {
-      Serial.println("Nu ati introdus un numar valabil! Va rog introduceti un numar din optiunile valabile!");
+  
+//  Deplasare inainte
+  digitalWrite(EN, LOW); //Poate fi comandat doar pe LOW
+  StepForwardDefault(5);
+  resetBEDPins();
+
+//  Testare distanta cu senzor infrarosu 
+  float distanta = masurareSenzor(pinInfrarosu);
+  if (distanta > 20) {
+    // Deplasare cu micropasire pe distanta de 19mm
+    digitalWrite(EN, LOW);
+    SmallStepMode(4);
+    resetBEDPins();
+  }
+  else {
+//    Se Opreste motorul 
+    resetBEDPins();
+  }
+
+
+// Testare forta de apasare pe obiect cu senzor de forta
+  float val = masurareSenzorForta(pinForta);
+  if (val > 350) {
+//    Se opreste motorul
+    digitalWrite(EN, HIGH);
+    resetBEDPins();
+  }
+  else {
+//    Se contiuna cu micropasire 
+    int nr_micropasi = 1;
+    while(val < 350) {
+      SmallStepMode(nr_micropasi);
+      nr_micropasi += 1;
     }
     resetBEDPins();
-     
   }
+  
+
+// Se opreste motorul de la mecanismul de prehensiune
+  
+
+// Se comanda motorul de la mecanismul de orientare pentru un unghi de 90*
+  digitalWrite(EN, LOW);
+  StepForwardDefault(50);
+  resetBEDPins();
+  digitalWrite(EN, HIGH);
+  
+
+// Desprindere obiect - functia ReverseSetpDefault 
+  digitalWrite(EN, LOW);
+  float valoare = masurareSenzorForta(pinForta);
+  int nr_pasi = 1;
+    while(val > 350) {
+      ReverseStepDefault(nr_pasi);
+      nr_pasi += 1;
+    }
+
+//  Oprire
+  resetBEDPins();
+  digitalWrite(EN, HIGH);         
 }
 
 void resetBEDPins() {
@@ -64,45 +106,44 @@ void resetBEDPins() {
   digitalWrite(EN, HIGH); // se opreste comanda 
 }
 
-void StepForwardDefault() {
+void StepForwardDefault(int nr) {
   Serial.println("Miscare inainte cu pasul motorului.");
   digitalWrite(dir, LOW);
-  for (x = 1; x < 1000; x++) {
+  for (x = 1; x < nr; x++) {
     digitalWrite(stp, HIGH);
     delay(1);
     digitalWrite(stp, LOW);
     delay(1);
   }
-  Serial.println("Introduceti o noua optiune...");
-  Serial.println();
+
 }
 
-void ReverseStepDefault() {
+void ReverseStepDefault(int nr) {
   Serial.println("Miscare inversa cu valoarea pasului");
   digitalWrite(dir, HIGH);
-  for (x = 1; x < 1000; ++x) {
+  for (x = 1; x < nr; ++x) {
     digitalWrite(stp, HIGH);
     delay(1);
     digitalWrite(stp, LOW);
     delay(1);
   }
-  Serial.println("Introduceti o noua optiune...");
+
   Serial.println();
 }
 
-void SmallStepMode() {
+void SmallStepMode(int nr) {
   Serial.println("Miscare 1/16 micropasire.");
   digitalWrite(dir, LOW);
   digitalWrite(MS1, HIGH);
   digitalWrite(MS2, HIGH);
   digitalWrite(MS3, HIGH);
-  for (x = 1; x < 1000; x++) {
+  for (x = 1; x < nr; x++) {
     digitalWrite(stp, HIGH);
     delay(1);
     digitalWrite(stp, LOW);
     delay(1);
   }
-  Serial.println("Introduceti o noua optiune...");
+
   Serial.println();
 }
 
@@ -123,95 +164,26 @@ void ForwardBackwardStep() {
       delay(100);
     }
   }
-  Serial.println("Introduceti o noua optiune...");
+
   Serial.println();
 }
 
+float masurareSenzor(int pinInfrarosu) {
+  valoareSenzor = analogRead(pinInfrarosu);
+  Serial.println(valoareSenzor);
+  float dist = map(valoareSenzor, 10, 400, 10, 80);
+  Serial.println(dist);
+  delay(400);
+  return dist;
+}
 
-
-
-
-
-
-
-
-
-
-
-
-// Senzor infra rosu
-//int valoareSenzor = 0;
-//int pinInfrarosu = 0;
-
-//void setup() {
-//  Serial.begin(9600);
-//}
-//
-//void loop() {
-//  valoareSenzor = analogRead(pinInfrarosu);
-//  Serial.println(valoareSenzor);
-//  float dist = map(valoareSenzor, 10, 400, 10, 80);
-//  Serial.println(dist);
-//  delay(400);
-//}
-
-// ---------------------------- //
-
-//void setup() {
-//  Serial.begin(9600);
-//}
-//
-//void loop() {
-//  int valoareSenzor = readDistanceMediata(10, 0);
-//  Serial.print("Valoare senzor: ");
-//  Serial.print(valoareSenzor);
-//  delay(100);  
-//}
-//
-//int readDistanceMediata(int count, int pin) {
-//  int sum = 0;
-//  int i;
-//  float volts;
-//  for (i = 0; i < count; i++) {
-//    float volts = analogRead(pin) * ((float)5 / 1024); 
-//    float distance = 65 * pow(volts, -1.10);
-//    sum += distance;
-//    delay(5);  
-//  }
-//  return (int)(sum / count);
-//}
-
-
-
-
-
-
-
-
-
-
-// Senzor de forta
-//void setup() {
-//  Serial.begin(9600);
-//}
-//
-//void loop() {
-//  int val = analogRead(0);
-//  if (val > 0) {
-//    Serial.print("Nivel de apasare: ");
-//    Serial.print(val);
-//    Serial.println();
-//    delay(100);
-//  }
-//}
-//
-//
-
-
-
-
-
-
-
-
-//
+float masurareSenzorForta(int pinForta) {
+  float val = analogRead(pinForta);
+  if (val > 0) {
+    Serial.print("Nivel de apasare: ");
+    Serial.print(val);
+    Serial.println();
+    delay(100);
+    return val;
+  }
+}
