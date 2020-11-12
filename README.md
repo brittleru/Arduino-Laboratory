@@ -25,3 +25,18 @@ Turatia la 5V: 15 rotatii pe minut
 ![Comutare Actionare](https://github.com/brittleru/Arduino-Laboratory/blob/main/lab2-img1.png?raw=true)
 ![Driver ULN 2003](https://github.com/brittleru/Arduino-Laboratory/blob/main/lab2-img2.png?raw=true)
 ![Legare Arduino](https://github.com/brittleru/Arduino-Laboratory/blob/main/lab2-img3.png?raw=true)
+
+## 3'rd Laboratory
+
+### Motoare pas cu pas Bipolare
+
+Se foloseste driverul A-4988 pentru motoare bipolare de 2A/faza. Pentru valore de 1.4 pana la 1.7 A/faza
+exista racire ativata pe placa, dar pentru valori mai mari trebuie asigurata racirea motorului. Tensiunea
+maxima de actionare este de 30V. Pe placa este un regulator pentru 2A/faza. Legarea fazelor motorului se
+face conform figurii de mai jos. Sursa de alimentare poate sa aiba 8V la 35V si sa asigure 2A.
+
+![Schema arduino](https://github.com/brittleru/Arduino-Laboratory/blob/main/scheme.png?raw=true)
+
+Se va folosi un senzor de distanta cu infrarosu Sharp GP2Y0A21YK (10cm - 80cm) si un senzor de forta/presiune.
+
+
